@@ -1,0 +1,75 @@
+// it is not working with redeploy (subnet has some problem)
+// https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/deployment-modes#incremental-mode
+
+/*
+------------------------
+parameters
+------------------------
+*/
+param prefix string
+param vnetcidr string
+param akssubnetaddr string
+param appgwsubnetaddr string
+
+var vnet_name = '${prefix}-vnet'
+var vnet_prefix = vnetcidr
+var appgw_subnet_name = '${prefix}-appgw-subnet'
+var appgw_subnet_address = appgwsubnetaddr
+var aks_subnet_name = '${prefix}-aks-subnet'
+var aks_subnet_address = akssubnetaddr
+var pip_name = '${prefix}-pip'
+
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2020-06-01' = {
+  name: vnet_name
+  location: resourceGroup().location
+  properties: {
+    addressSpace:{
+      addressPrefixes:[
+        vnet_prefix
+      ]
+    }
+  }
+}
+
+@description('appgw subnet')
+resource appgwsubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
+  parent: virtualNetwork
+  name: appgw_subnet_name
+  properties: {
+    addressPrefix: appgw_subnet_address
+    // privateEndpointNetworkPolicies: 'Enabled'
+    // privateLinkServiceNetworkPolicies: 'Enabled'
+  }
+}
+
+@description('aks subnet')
+resource akssubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
+  parent: virtualNetwork
+  name: aks_subnet_name
+  properties: {
+    addressPrefix: aks_subnet_address
+    // privateEndpointNetworkPolicies: 'Enabled'
+    // privateLinkServiceNetworkPolicies: 'Enabled'
+  }
+}
+
+@description('appgw public IP')
+resource publicIP 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
+  name: pip_name
+  location: resourceGroup().location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+/*
+------------------------
+outputs
+------------------------
+*/
+output appgwsubnetid string = appgwsubnet.id
+output akssubnetid string = akssubnet.id
+output appgwpipid string = publicIP.id
