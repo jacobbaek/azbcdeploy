@@ -7,6 +7,7 @@ param clusterdnsdomain string
 param clustername string
 param k8sversion string
 param subnetid string
+param appgwid string
 
 param aksSettings object = {
   clusterdnsname: clusterdnsdomain
@@ -55,9 +56,11 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
       }
     ]
     addonProfiles: {
-        openServiceMesh: {
-            enabled: false
-            config: {}
+      ingressApplicationGateway: {
+        enabled: true
+        config: {
+          applicationGatewayId: appgwid
+        }
       }
     }
   }

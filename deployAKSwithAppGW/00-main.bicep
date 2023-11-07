@@ -26,31 +26,31 @@ module network './01-network.bicep' = if (newOrExisting == 'new') {
 
 /*
 ------------------------------------------------
-AKS CLUSTER
+02. APP GATEWAY
 ------------------------------------------------
 */
-module aks './02-aksCluster.bicep' = if (newOrExisting == 'new') {
-  name: 'akscluster'
-  params: {
-    clusterdnsdomain: '${prefix}domain'
-    clustername: '${prefix}-aks'
-    k8sversion: k8sversion
-    subnetid: network.outputs.akssubnetid
-  }
-}
-
-
-/*
-------------------------------------------------
-APP GATEWAY
-------------------------------------------------
-*/
-module appgw './03-appGW.bicep' = {
+module appgw './02-appGW.bicep' = if (newOrExisting == 'new') {
   name: 'appgw'
   params: {
     prefix: prefix
     appgwname: '${prefix}-appgw'
     appgwsubnetid: network.outputs.appgwsubnetid
     appgwpipid: network.outputs.appgwpipid
+  }
+}
+
+/*
+------------------------------------------------
+03. AKS CLUSTER
+------------------------------------------------
+*/
+module aks './03-aksCluster.bicep' = if (newOrExisting == 'new') {
+  name: 'akscluster'
+  params: {
+    clusterdnsdomain: '${prefix}domain'
+    clustername: '${prefix}-aks'
+    k8sversion: k8sversion
+    subnetid: network.outputs.akssubnetid
+    appgwid: appgw.outputs.appgwid
   }
 }

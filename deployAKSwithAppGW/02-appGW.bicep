@@ -109,3 +109,11 @@ resource appgw 'Microsoft.Network/applicationGateways@2021-08-01' = {
     enableHttp2: false
   }
 }
+
+/*
+------------------------
+outputs
+------------------------
+*/
+
+output appgwid string = appgw.id
