@@ -66,3 +66,18 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
   }
 }
 
+resource contributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+  scope: subscription()
+}
+
+// https://github.com/Azure-Samples/aks-application-gateway-for-containers-bicep/blob/a5154f198e6c7e79368e8fbecfc7f2752d7318e7/bicep/aksCluster.bicep#L869
+resource applicationGatewayAgicContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, 'ApplicationGateway', 'contributor')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: contributorRole.id
+    principalType: 'ServicePrincipal'
+    principalId: aksCluster.properties.addonProfiles.ingressApplicationGateway.identity.objectId
+  }
+}
